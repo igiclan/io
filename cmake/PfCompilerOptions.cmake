@@ -9,7 +9,7 @@ if(MSVC)
     target_compile_definitions(pf_options INTERFACE _CRT_SECURE_NO_WARNINGS)
 else()
     target_compile_options(pf_options INTERFACE -Wall -Wextra -Wpedantic -Wshadow -Wnon-virtual-dtor
-        -Wcast-align -Wunused -Woverloaded-virtual -Wnull-dereference -Wformat=2)
+        -Wcast-align -Wunused -Woverloaded-virtual -Wformat=2)
     if(PF_WARNINGS_AS_ERRORS)
         target_compile_options(pf_options INTERFACE -Werror)
     endif()

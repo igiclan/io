@@ -10,7 +10,16 @@ add_library(pf_shared STATIC
     Models/DeviceIdentity.cpp
     Models/ModeDetector.cpp
     Models/SessionState.cpp
+    Common/Config.cpp
+    Models/DeviceInfo.cpp
     Protocol/Protocol.cpp
+    Logging/Logger.cpp
+    Diagnostics/Metrics.cpp
+    Crypto/Crypto.cpp
+    Crypto/TokenStore.cpp
+    Crypto/SecretStore.cpp
+    Network/Transport.cpp
+    Network/FrameConnection.cpp
 )
 target_include_directories(pf_shared PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(pf_shared

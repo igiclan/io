@@ -18,4 +18,12 @@ pf_add_test(pf_unit_tests unit
     Unit/test_mode_detector.cpp
     Unit/test_session_state.cpp
     Unit/test_buffer_pool.cpp
+    Unit/test_logging.cpp
+    Unit/test_metrics.cpp
+    Unit/test_config.cpp
+    Unit/test_crypto.cpp
+)
+pf_add_test(pf_network_tests network
+    Unit/main.cpp
+    Network/test_connection.cpp
 )
