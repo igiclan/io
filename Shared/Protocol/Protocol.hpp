@@ -163,6 +163,13 @@ struct PingMsg {
 // Encoders return a complete frame (header + payload).
 OutFrame encode_submit(const UsbSubmitMsg& m, BufferPool& pool = BufferPool::global());
 OutFrame encode_complete(const UsbCompleteMsg& m, BufferPool& pool = BufferPool::global());
+// Zero-copy completion: `buf` was allocated with complete_prefix_size(iso_count)
+// bytes reserved in front of the IN data (which is already in place, data_len
+// bytes). Writes frame + completion headers into the prefix and returns the frame.
+constexpr std::size_t complete_prefix_size(std::size_t iso_count) noexcept {
+    return kHeaderSize + kCompleteFixedSize + iso_count * 8;
+}
+OutFrame finalize_complete_inplace(PooledBuffer&& buf, const UsbCompleteMsg& m, std::size_t data_len);
 OutFrame encode_cancel(const UsbCancelMsg& m, BufferPool& pool = BufferPool::global());
 OutFrame encode_reset(const UsbResetMsg& m, BufferPool& pool = BufferPool::global());
 OutFrame encode_config(const UsbConfigMsg& m, BufferPool& pool = BufferPool::global());

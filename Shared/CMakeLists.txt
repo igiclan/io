@@ -20,6 +20,7 @@ add_library(pf_shared STATIC
     Crypto/SecretStore.cpp
     Network/Transport.cpp
     Network/FrameConnection.cpp
+    Licensing/License.cpp
 )
 target_include_directories(pf_shared PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(pf_shared

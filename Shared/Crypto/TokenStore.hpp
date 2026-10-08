@@ -43,6 +43,10 @@ public:
     TokenStore() = default;
     explicit TokenStore(std::filesystem::path file) : file_(std::move(file)) {}
 
+    void set_file(std::filesystem::path file) {
+        std::lock_guard lk(m_);
+        file_ = std::move(file);
+    }
     Status load();  // missing file = empty store
     Status save() const;
 

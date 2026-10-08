@@ -234,3 +234,18 @@ TEST_CASE("decoders never read out of bounds on truncated input") {
         (void)decode_complete(junk, c);
     }
 }
+
+TEST_CASE("in-place completion equals regular encoding") {
+    Bytes data{9, 8, 7, 6};
+    UsbCompleteMsg m;
+    m.seq = 5;
+    m.device = 2;
+    m.actual_length = 4;
+    m.in_data = data;
+    auto regular = encode_complete(m);
+    auto buf = BufferPool::global().acquire(complete_prefix_size(0) + 4);
+    std::memcpy(buf.data() + complete_prefix_size(0), data.data(), 4);
+    auto inplace = finalize_complete_inplace(std::move(buf), m, 4);
+    REQUIRE(inplace.buf.size() == regular.buf.size());
+    CHECK(std::equal(inplace.buf.data(), inplace.buf.data() + inplace.buf.size(), regular.buf.data()));
+}

@@ -169,6 +169,32 @@ OutFrame encode_complete(const UsbCompleteMsg& m, BufferPool& pool) {
     return f;
 }
 
+OutFrame finalize_complete_inplace(PooledBuffer&& buf, const UsbCompleteMsg& m, std::size_t data_len) {
+    const std::size_t prefix = complete_prefix_size(m.iso.size());
+    OutFrame f;
+    f.type = MsgType::UsbComplete;
+    f.buf = std::move(buf);
+    f.buf.resize(prefix + data_len);
+    FrameHeader h;
+    h.type = MsgType::UsbComplete;
+    h.flags = frame_flags::kResponse;
+    h.payload_size = static_cast<std::uint32_t>(prefix - kHeaderSize + data_len);
+    encode_header(f.buf.data(), h);
+    SpanWriter w(f.buf.span().subspan(kHeaderSize, prefix - kHeaderSize));
+    w.u64(m.seq);
+    w.u32(m.device);
+    w.i32(static_cast<std::int32_t>(m.status));
+    w.u32(m.actual_length);
+    w.u32(static_cast<std::uint32_t>(m.iso.size()));
+    w.u32(m.iso_error_count);
+    w.u32(0);
+    for (const auto& r : m.iso) {
+        w.u32(r.actual_length);
+        w.i32(r.status);
+    }
+    return f;
+}
+
 Status decode_complete(ByteSpan payload, UsbCompleteMsg& m) {
     ByteReader r(payload);
     m.seq = r.u64();
