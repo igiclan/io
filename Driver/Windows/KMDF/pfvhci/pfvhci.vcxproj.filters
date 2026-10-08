@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;inf</Extensions>
+    </Filter>
+    <Filter Include="Shared ABI">
+      <UniqueIdentifier>{B1D3C2A4-5E6F-4A7B-8C9D-0E1F2A3B4C5D}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Driver.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="Controller.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="UsbDevice.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="Endpoint.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="RecordQueue.cpp"><Filter>Source Files</Filter></ClCompile>
+    <ClCompile Include="Ioctl.cpp"><Filter>Source Files</Filter></ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Common.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="Driver.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="Controller.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="UsbDevice.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="Endpoint.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="RecordQueue.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="Ioctl.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="Trace.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="Version.h"><Filter>Header Files</Filter></ClInclude>
+    <ClInclude Include="..\..\..\..\Shared\Driver\pfvhci_ioctl.h"><Filter>Shared ABI</Filter></ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="pfvhci.rc"><Filter>Resource Files</Filter></ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Inf Include="pfvhci.inf"><Filter>Resource Files</Filter></Inf>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,26 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 17.0.31903.59
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pfvhci", "pfvhci.vcxproj", "{6F4C2B1E-8D7A-4B5E-9C21-3A9F0E5D7B42}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6F4C2B1E-8D7A-4B5E-9C21-3A9F0E5D7B42}.Debug|x64.ActiveCfg = Debug|x64
+		{6F4C2B1E-8D7A-4B5E-9C21-3A9F0E5D7B42}.Debug|x64.Build.0 = Debug|x64
+		{6F4C2B1E-8D7A-4B5E-9C21-3A9F0E5D7B42}.Debug|x64.Deploy.0 = Debug|x64
+		{6F4C2B1E-8D7A-4B5E-9C21-3A9F0E5D7B42}.Release|x64.ActiveCfg = Release|x64
+		{6F4C2B1E-8D7A-4B5E-9C21-3A9F0E5D7B42}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0B7E2F3A-1C4D-4E8F-9A6B-5D2C1E0F3A47}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,40 @@
+/*
+ * ParsFlash USB Redirector - pfvhci.sys version resource
+ * https://parsflash.com
+ */
+#include <windows.h>
+#include "Version.h"
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION    PFVHCI_VERSION_MAJOR, PFVHCI_VERSION_MINOR, PFVHCI_VERSION_PATCH, PFVHCI_VERSION_BUILD
+ PRODUCTVERSION PFVHCI_VERSION_MAJOR, PFVHCI_VERSION_MINOR, PFVHCI_VERSION_PATCH, PFVHCI_VERSION_BUILD
+ FILEFLAGSMASK  VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+ FILEFLAGS      VS_FF_DEBUG
+#else
+ FILEFLAGS      0x0L
+#endif
+ FILEOS         VOS_NT_WINDOWS32
+ FILETYPE       VFT_DRV
+ FILESUBTYPE    VFT2_DRV_SYSTEM
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName",      PFVHCI_COMPANY_NAME
+            VALUE "FileDescription",  PFVHCI_FILE_DESCRIPTION
+            VALUE "FileVersion",      PFVHCI_VERSION_STRING
+            VALUE "InternalName",     PFVHCI_INTERNAL_NAME
+            VALUE "LegalCopyright",   PFVHCI_COPYRIGHT
+            VALUE "OriginalFilename", PFVHCI_ORIGINAL_NAME
+            VALUE "ProductName",      PFVHCI_PRODUCT_NAME
+            VALUE "ProductVersion",   PFVHCI_VERSION_STRING
+            VALUE "Comments",         PFVHCI_COMPANY_URL
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END

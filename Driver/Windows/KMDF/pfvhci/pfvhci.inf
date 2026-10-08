@@ -1,0 +1,102 @@
+;
+; pfvhci.inf - ParsFlash Virtual USB Host Controller (UdeCx)
+; ParsFlash USB Redirector - https://parsflash.com
+;
+; Root-enumerated KMDF + UdeCx driver. Installed by "pfdevcon install pfvhci.inf"
+; (creates the ROOT\ParsFlashVhci device node and installs this package on it).
+;
+; DriverVer below is a placeholder: stampinf (run by the WDK build, see
+; pfvhci.vcxproj) replaces it with the build date and version.
+;
+; VERIFY: run "infverif /w /v pfvhci.inf" with the WDK used for release builds.
+;
+
+[Version]
+Signature   = "$WINDOWS NT$"
+Class       = USB
+ClassGuid   = {36FC9E60-C465-11CF-8056-444553540000}
+Provider    = %ManufacturerName%
+CatalogFile = pfvhci.cat
+DriverVer   = 01/01/2026,1.0.0.0
+PnpLockdown = 1
+
+[DestinationDirs]
+; 13 = run from the driver store (driver package isolation, Windows 10 1709+).
+; VERIFY: if a target build rejects DIRID 13, fall back to 12 (System32\drivers).
+DefaultDestDir = 13
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+pfvhci.sys = 1,,
+
+;-----------------------------------------------------------------------------
+; Models: x64 only, Windows 10 1709 (build 16299) and later
+;-----------------------------------------------------------------------------
+
+[Manufacturer]
+%ManufacturerName% = ParsFlash,NTamd64.10.0...16299
+
+[ParsFlash.NTamd64.10.0...16299]
+%PfVhci.DeviceDesc% = PfVhci_Device, Root\ParsFlashVhci
+
+;-----------------------------------------------------------------------------
+; Install
+;-----------------------------------------------------------------------------
+
+[PfVhci_Device.NT]
+CopyFiles = PfVhci_CopyFiles
+
+[PfVhci_CopyFiles]
+pfvhci.sys
+
+[PfVhci_Device.NT.HW]
+AddReg = PfVhci_Device_HW_AddReg
+
+[PfVhci_Device_HW_AddReg]
+; Device object security (applies to the whole device stack):
+;   SYSTEM and BUILTIN\Administrators: generic all. Nobody else can open the
+;   controller, neither through the private interface nor through
+;   GUID_DEVINTERFACE_USB_HOST_CONTROLLER. The ParsFlash client service runs as
+;   LocalSystem. To grant a dedicated (virtual) service account instead, append
+;   (A;;GRGW;;;<service SID>) - see Docs/DRIVER.md, "Security".
+HKR,,Security,,"D:P(A;;GA;;;SY)(A;;GA;;;BA)"
+
+[PfVhci_Device.NT.Services]
+AddService = pfvhci,0x00000002,PfVhci_Service_Inst   ; SPSVCINST_ASSOCSERVICE
+
+[PfVhci_Service_Inst]
+DisplayName   = %PfVhci.ServiceDesc%
+ServiceType   = 1               ; SERVICE_KERNEL_DRIVER
+StartType     = 3               ; SERVICE_DEMAND_START (PnP starts it)
+ErrorControl  = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary = %13%\pfvhci.sys
+; UdeCx client drivers depend on the USB class extensions (same as usbip-win2).
+Dependencies  = ucx01000,udecx
+AddReg        = PfVhci_Parameters_AddReg
+
+[PfVhci_Parameters_AddReg]
+; Number of root hub ports of the virtual controller (1..127 each; read at start).
+; 0x00010003 = FLG_ADDREG_TYPE_DWORD | FLG_ADDREG_NOCLOBBER: values changed by an
+; administrator survive driver upgrades.
+HKR,Parameters,NumberOfUsb20Ports,0x00010003,8
+HKR,Parameters,NumberOfUsb30Ports,0x00010003,8
+
+;-----------------------------------------------------------------------------
+; KMDF
+;-----------------------------------------------------------------------------
+
+[PfVhci_Device.NT.Wdf]
+KmdfService = pfvhci, PfVhci_WdfSection
+
+[PfVhci_WdfSection]
+KmdfLibraryVersion = $KMDFVERSION$
+
+;-----------------------------------------------------------------------------
+
+[Strings]
+ManufacturerName    = "ParsFlash"
+DiskName            = "ParsFlash USB Redirector Installation Disk"
+PfVhci.DeviceDesc   = "ParsFlash Virtual USB Host Controller"
+PfVhci.ServiceDesc  = "ParsFlash Virtual USB Host Controller (pfvhci)"

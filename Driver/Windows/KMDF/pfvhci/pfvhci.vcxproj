@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ParsFlash USB Redirector - pfvhci.sys (KMDF + UdeCx virtual USB host controller)
+  https://parsflash.com
+
+  Requirements: Visual Studio 2022 (17.x) with "Desktop development with C++",
+  the MSVC v143 Spectre-mitigated libraries (x64), Windows SDK + WDK 10.0.22621 or newer.
+
+  Build:   msbuild pfvhci.vcxproj /p:Configuration=Release /p:Platform=x64
+  CI:      add /p:PfvhciBuild=<n> to stamp version 1.0.0.<n> into the binary and the INF.
+
+  VERIFY: this project was written without a WDK installation and has never been
+  loaded by Visual Studio. Check in particular that UdeDriver=true adds the UdeCx
+  include path and udecxstub.lib for UDE_VERSION 1.1 (otherwise add udecxstub.lib
+  from the WDK "km\x64\ude\1.1" library folder to AdditionalDependencies).
+-->
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{6F4C2B1E-8D7A-4B5E-9C21-3A9F0E5D7B42}</ProjectGuid>
+    <TemplateGuid>{497e31cb-056b-4f31-abb8-447fd55ee5a5}</TemplateGuid>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <MinimumVisualStudioVersion>17.0</MinimumVisualStudioVersion>
+    <Configuration>Debug</Configuration>
+    <Platform Condition="'$(Platform)' == ''">x64</Platform>
+    <RootNamespace>pfvhci</RootNamespace>
+    <ProjectName>pfvhci</ProjectName>
+    <WindowsTargetPlatformVersion>$(LatestTargetPlatformVersion)</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+
+  <!-- Version: keep in sync with Version.h (major.minor.patch); build number from CI. -->
+  <PropertyGroup>
+    <PfvhciBuild Condition="'$(PfvhciBuild)' == ''">0</PfvhciBuild>
+    <PfvhciVersion>1.0.0.$(PfvhciBuild)</PfvhciVersion>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+
+  <!--
+    Windows 10 1709 (RS3, build 16299) is the oldest supported OS:
+      _NT_TARGET_VERSION 0xA000004 = NTDDI_WIN10_RS3, KMDF 1.23 = the KMDF version shipped
+      with 1709, UdeCx 1.1 (needed for NumberOfUsb20Ports / NumberOfUsb30Ports).
+  -->
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetVersion>Windows10</TargetVersion>
+    <_NT_TARGET_VERSION>0xA000004</_NT_TARGET_VERSION>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
+    <ConfigurationType>Driver</ConfigurationType>
+    <DriverType>KMDF</DriverType>
+    <DriverTargetPlatform>Universal</DriverTargetPlatform>
+    <KMDF_VERSION_MAJOR>1</KMDF_VERSION_MAJOR>
+    <KMDF_VERSION_MINOR>23</KMDF_VERSION_MINOR>
+    <UdeDriver>true</UdeDriver>
+    <UDE_VERSION_MAJOR>1</UDE_VERSION_MAJOR>
+    <UDE_VERSION_MINOR>1</UDE_VERSION_MINOR>
+    <Driver_SpectreMitigation>Spectre</Driver_SpectreMitigation>
+    <CharacterSet>Unicode</CharacterSet>
+    <SignMode>TestSign</SignMode>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetVersion>Windows10</TargetVersion>
+    <_NT_TARGET_VERSION>0xA000004</_NT_TARGET_VERSION>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
+    <ConfigurationType>Driver</ConfigurationType>
+    <DriverType>KMDF</DriverType>
+    <DriverTargetPlatform>Universal</DriverTargetPlatform>
+    <KMDF_VERSION_MAJOR>1</KMDF_VERSION_MAJOR>
+    <KMDF_VERSION_MINOR>23</KMDF_VERSION_MINOR>
+    <UdeDriver>true</UdeDriver>
+    <UDE_VERSION_MAJOR>1</UDE_VERSION_MAJOR>
+    <UDE_VERSION_MINOR>1</UDE_VERSION_MINOR>
+    <Driver_SpectreMitigation>Spectre</Driver_SpectreMitigation>
+    <CharacterSet>Unicode</CharacterSet>
+    <!-- Release binaries are signed by the release pipeline (EV cert + Partner Center). -->
+    <SignMode>Off</SignMode>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+
+  <PropertyGroup>
+    <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
+    <!-- Build outputs outside the source tree. -->
+    <OutDir>$(MSBuildProjectDirectory)\..\..\..\..\out\driver\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(MSBuildProjectDirectory)\..\..\..\..\out\driver\obj\$(Platform)\$(Configuration)\</IntDir>
+    <!-- VERIFY: property name used by the WDK targets to run Inf2Cat after stampinf. -->
+    <EnableInf2cat>true</EnableInf2cat>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <WppEnabled>false</WppEnabled>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..\..\..\..\Shared\Driver;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>PFVHCI_VERSION_BUILD=$(PfvhciBuild);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>PFVHCI_VERSION_BUILD=$(PfvhciBuild);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Link>
+      <!-- wdmsec.lib: SDDL_DEVOBJ_SYS_ALL_ADM_ALL. udecxstub.lib comes from UdeDriver=true (VERIFY above). -->
+      <AdditionalDependencies>$(DDK_LIB_PATH)wdmsec.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
+    </Link>
+    <Inf>
+      <!-- stampinf: DriverVer = <build date>,$(PfvhciVersion); $KMDFVERSION$ from KMDF_VERSION_*. -->
+      <SpecifyDriverVerDirectiveVersion>true</SpecifyDriverVerDirectiveVersion>
+      <TimeStamp>$(PfvhciVersion)</TimeStamp>
+    </Inf>
+    <Inf2Cat>
+      <UseLocalTime>true</UseLocalTime>
+    </Inf2Cat>
+    <DriverSign>
+      <FileDigestAlgorithm>sha256</FileDigestAlgorithm>
+    </DriverSign>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <ClCompile Include="Driver.cpp" />
+    <ClCompile Include="Controller.cpp" />
+    <ClCompile Include="UsbDevice.cpp" />
+    <ClCompile Include="Endpoint.cpp" />
+    <ClCompile Include="RecordQueue.cpp" />
+    <ClCompile Include="Ioctl.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Common.h" />
+    <ClInclude Include="Driver.h" />
+    <ClInclude Include="Controller.h" />
+    <ClInclude Include="UsbDevice.h" />
+    <ClInclude Include="Endpoint.h" />
+    <ClInclude Include="RecordQueue.h" />
+    <ClInclude Include="Ioctl.h" />
+    <ClInclude Include="Trace.h" />
+    <ClInclude Include="Version.h" />
+    <ClInclude Include="..\..\..\..\Shared\Driver\pfvhci_ioctl.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="pfvhci.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Inf Include="pfvhci.inf" />
+  </ItemGroup>
+  <ItemGroup>
+    <FilesToPackage Include="$(TargetPath)" />
+  </ItemGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>
