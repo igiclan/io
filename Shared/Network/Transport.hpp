@@ -6,6 +6,7 @@
 #include <atomic>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string>
 #include <thread>
 #include <vector>
@@ -107,6 +108,9 @@ struct ConnectOptions {
     NetworkTuning tuning;
     KeepaliveConfig keepalive;
     std::uint32_t timeout_ms = 10000;
+    // Strand for the resulting transport (and its handlers). Callers that keep state on
+    // their own strand pass it here so connection callbacks share it.
+    std::optional<Strand> strand;
 };
 
 using ConnectHandler = std::function<void(Result<TransportPtr>)>;

@@ -27,3 +27,15 @@ pf_add_test(pf_network_tests network
     Unit/main.cpp
     Network/test_connection.cpp
 )
+
+set(PF_TEST_LIBS pf_server_core pf_client_core)
+pf_add_test(pf_integration_tests integration
+    Unit/main.cpp
+    Integration/test_end_to_end.cpp
+    Integration/test_persistence.cpp
+)
+pf_add_test(pf_client_unit_tests unit
+    Unit/main.cpp
+    Unit/test_vhci_records.cpp
+)
+target_include_directories(pf_integration_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

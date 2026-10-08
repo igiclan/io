@@ -268,7 +268,8 @@ void Listener::do_accept() {
 namespace {
 struct ConnectOp : std::enable_shared_from_this<ConnectOp> {
     ConnectOp(IoRuntime& r, ConnectOptions o, ConnectHandler h)
-        : rt(r), opts(std::move(o)), handler(std::move(h)), strand(r.make_strand()), resolver(strand),
+        : rt(r), opts(std::move(o)), handler(std::move(h)), strand(opts.strand ? *opts.strand : r.make_strand()),
+          resolver(strand),
           socket(strand), timer(strand) {}
 
     IoRuntime& rt;

@@ -120,7 +120,9 @@ Status from_json(const json& j, ServerConfig& c) {
     try {
         c.server_name = j.value("server_name", c.server_name);
         c.listen_address = j.value("listen_address", c.listen_address);
-        c.server_port = j.value("server_port", c.server_port);
+        const int port = j.value("server_port", static_cast<int>(c.server_port));
+        if (port < 0 || port > 65535) return {ErrorCode::InvalidArgument, "server_port must be 0..65535"};
+        c.server_port = static_cast<std::uint16_t>(port);
         c.tls_enabled = j.value("tls_enabled", c.tls_enabled);
         c.cert_file = j.value("cert_file", c.cert_file);
         c.key_file = j.value("key_file", c.key_file);
@@ -143,7 +145,9 @@ Status from_json(const json& j, ServerConfig& c) {
         if (auto it = j.find("api"); it != j.end() && it->is_object()) {
             c.api.enabled = it->value("enabled", c.api.enabled);
             c.api.bind_address = it->value("bind_address", c.api.bind_address);
-            c.api.port = it->value("port", c.api.port);
+            const int api_port = it->value("port", static_cast<int>(c.api.port));
+            if (api_port < 1 || api_port > 65535) return {ErrorCode::InvalidArgument, "api.port must be 1..65535"};
+            c.api.port = static_cast<std::uint16_t>(api_port);
         }
         if (auto it = j.find("usb"); it != j.end() && it->is_object()) {
             c.usb.backend = it->value("backend", c.usb.backend);
@@ -167,7 +171,7 @@ Status from_json(const json& j, ServerConfig& c) {
 }
 
 Status validate(const ServerConfig& c) {
-    if (c.server_port == 0) return {ErrorCode::InvalidArgument, "server_port must be 1..65535"};
+    // server_port 0 = let the OS choose (tests/benchmarks); the bound port is reported.
     if (c.max_clients == 0 || c.max_clients > 1024) return {ErrorCode::InvalidArgument, "max_clients 1..1024"};
     if (c.max_devices == 0 || c.max_devices > 1024) return {ErrorCode::InvalidArgument, "max_devices 1..1024"};
     if (c.worker_threads > 256) return {ErrorCode::InvalidArgument, "worker_threads 0..256"};

@@ -32,7 +32,7 @@ TEST_CASE("server config parse + validation") {
     CHECK(c.network.read_buffer_size == 131072);
     CHECK(c.usb.test_devices == 2);
     ServerConfig bad;
-    CHECK_FALSE(from_json(nlohmann::json::parse(R"({"server_port": 0})"), bad).ok());
+    CHECK_FALSE(from_json(nlohmann::json::parse(R"({"server_port": 70000})"), bad).ok());
     CHECK_FALSE(from_json(nlohmann::json::parse(R"({"performance_mode": "turbo"})"), bad).ok());
     CHECK_FALSE(from_json(nlohmann::json::parse(R"({"server_port": "x"})"), bad).ok());
     CHECK_FALSE(from_json(nlohmann::json::parse(R"({"log_level": "loud"})"), bad).ok());
