@@ -28,6 +28,7 @@
 namespace pf::server {
 
 class ClientConn;
+class RestApi;
 
 struct ClientSnapshot {
     std::string connection_id;
@@ -68,6 +69,7 @@ public:
 
     [[nodiscard]] const ServerConfig& config() const noexcept { return cfg_; }
     [[nodiscard]] std::uint16_t port() const noexcept;
+    [[nodiscard]] std::uint16_t api_port() const noexcept;  // 0 when the management API is disabled
     [[nodiscard]] const std::string& fingerprint() const noexcept { return fingerprint_; }
     [[nodiscard]] const std::string& server_id() const noexcept { return server_id_; }
     TokenStore& tokens() noexcept { return tokens_; }
@@ -124,6 +126,7 @@ private:
     std::unique_ptr<net::IoRuntime> rt_;
     std::unique_ptr<asio::thread_pool> blocking_;
     std::shared_ptr<net::Listener> listener_;
+    std::unique_ptr<RestApi> api_;
     std::shared_ptr<asio::ssl::context> tls_;
     std::unique_ptr<asio::steady_timer> poll_timer_;
     std::unique_ptr<asio::steady_timer> metrics_timer_;

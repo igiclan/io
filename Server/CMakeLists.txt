@@ -5,6 +5,7 @@ add_library(pf_server_core STATIC
     USB/DeviceInventory.cpp
     Sessions/ServerSession.cpp
     Core/ServerEngine.cpp
+    API/RestApi.cpp
 )
 target_include_directories(pf_server_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(pf_server_core PUBLIC pf_shared)

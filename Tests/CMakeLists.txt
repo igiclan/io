@@ -33,6 +33,7 @@ pf_add_test(pf_integration_tests integration
     Unit/main.cpp
     Integration/test_end_to_end.cpp
     Integration/test_persistence.cpp
+    Integration/test_rest_api.cpp
 )
 pf_add_test(pf_client_unit_tests unit
     Unit/main.cpp

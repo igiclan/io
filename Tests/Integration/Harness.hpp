@@ -19,6 +19,7 @@ struct HarnessOptions {
     std::uint32_t reconnect_timeout_ms = 5000;
     std::uint32_t keepalive_ms = 200;
     bool share_all = true;
+    bool api = false;  // management API on an ephemeral port
 };
 
 class Harness {
@@ -30,7 +31,8 @@ public:
         apply_defaults(sc, dir_.path() / "server");
         sc.listen_address = "127.0.0.1";
         sc.server_port = 0;  // ephemeral
-        sc.api.enabled = false;
+        sc.api.enabled = o.api;
+        sc.api.port = 0;
         sc.tls_enabled = o.tls;
         sc.reconnect_timeout_ms = o.reconnect_timeout_ms;
         sc.keepalive.interval_ms = o.keepalive_ms;
@@ -42,7 +44,7 @@ public:
         server = std::make_unique<server::ServerEngine>(sc, std::move(be));
         auto st = server->start();
         if (!st) throw std::runtime_error(st.error().describe());
-        auto tok = server->tokens().create("integration", false);
+        auto tok = server->tokens().create("integration", true);  // admin: tests drive every endpoint
         if (!tok) throw std::runtime_error(tok.error().describe());
         token = *tok;
     }

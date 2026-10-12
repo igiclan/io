@@ -182,7 +182,7 @@ Status validate(const ServerConfig& c) {
     if (c.network.max_frame_size < 64 * 1024) return {ErrorCode::InvalidArgument, "max_frame_size >= 64 KiB"};
     if (c.network.send_low_watermark >= c.network.send_high_watermark)
         return {ErrorCode::InvalidArgument, "send_low_watermark must be < send_high_watermark"};
-    if (c.api.enabled && c.api.port == c.server_port) return {ErrorCode::InvalidArgument, "api.port == server_port"};
+    if (c.api.enabled && c.api.port != 0 && c.api.port == c.server_port) return {ErrorCode::InvalidArgument, "api.port == server_port"};
     if (c.usb.backend != "auto" && c.usb.backend != "libusb" && c.usb.backend != "test")
         return {ErrorCode::InvalidArgument, "usb.backend must be auto|libusb|test"};
     if (c.usb.share_policy != "manual" && c.usb.share_policy != "all")

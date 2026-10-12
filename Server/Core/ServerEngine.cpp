@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <unordered_map>
 
+#include "API/RestApi.hpp"
 #include "Crypto/Crypto.hpp"
 #include "Logging/Logger.hpp"
 #include "USB/LoopbackBackend.hpp"
@@ -433,6 +434,16 @@ Status ServerEngine::start() {
         backend_->stop();
         return st;
     }
+    if (cfg_.api.enabled) {
+        api_ = std::make_unique<RestApi>(*this);
+        if (auto st = api_->start(*rt_, cfg_.api.bind_address, cfg_.api.port); !st) {
+            api_.reset();
+            listener_->stop();
+            rt_->stop();
+            backend_->stop();
+            return st;
+        }
+    }
     running_ = true;
     backend_->set_change_callback([this] { schedule_rescan(); });
     schedule_rescan(0);
@@ -464,6 +475,7 @@ Status ServerEngine::start() {
 
 void ServerEngine::stop() {
     if (!running_.exchange(false)) return;
+    if (api_) api_->stop();
     if (listener_) listener_->stop();
     std::vector<std::shared_ptr<ClientConn>> conns;
     std::vector<std::shared_ptr<ServerSession>> sessions;
@@ -490,6 +502,8 @@ void ServerEngine::stop() {
 }
 
 std::uint16_t ServerEngine::port() const noexcept { return listener_ ? listener_->port() : cfg_.server_port; }
+
+std::uint16_t ServerEngine::api_port() const noexcept { return api_ ? api_->port() : 0; }
 
 // ------------------------------------------------------------ connections
 
