@@ -10,6 +10,7 @@
 // --test-vhci uses the TEST driver double instead of the Windows virtual USB controller.
 // Devices attached through it are not visible to Windows applications.
 #include <algorithm>
+#include <cctype>
 #include <atomic>
 #include <chrono>
 #include <csignal>
@@ -132,6 +133,8 @@ int main(int argc, char** argv) {
     if (set_token) {
         std::string token = set_token->second;
         if (token == "-") std::getline(std::cin, token);
+        // Windows consoles end lines with CRLF; a stray CR would make the token invalid.
+        while (!token.empty() && std::isspace(static_cast<unsigned char>(token.back()))) token.pop_back();
         auto it = std::find_if(cfg.servers.begin(), cfg.servers.end(),
                                [&](const pf::ServerEntry& e) { return e.name == set_token->first; });
         if (it == cfg.servers.end()) {
