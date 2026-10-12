@@ -16,3 +16,6 @@ endif()
 if(WIN32)
     target_link_libraries(pf_server_core PUBLIC setupapi cfgmgr32)
 endif()
+
+add_executable(parsflash-server App/ServerMain.cpp)
+target_link_libraries(parsflash-server PRIVATE pf_server_core)

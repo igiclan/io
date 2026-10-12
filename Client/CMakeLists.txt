@@ -11,3 +11,6 @@ target_link_libraries(pf_client_core PUBLIC pf_shared)
 if(WIN32)
     target_link_libraries(pf_client_core PUBLIC setupapi)
 endif()
+
+add_executable(parsflash-client App/ClientMain.cpp)
+target_link_libraries(parsflash-client PRIVATE pf_client_core)
