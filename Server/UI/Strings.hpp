@@ -4,9 +4,9 @@
 
 #include <QString>
 
-namespace pf::gui {
+#include "Kit/UiKit.hpp"
 
-enum class Lang { En, Fa };
+namespace pf::gui {
 
 QString tl(Lang lang, const char* key);
 

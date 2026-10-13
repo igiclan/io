@@ -94,7 +94,7 @@ public:
 
 private:
     friend class ServerLink;
-    void emit(const std::string& kind, const nlohmann::json& body);
+    void publish_event(const std::string& kind, const nlohmann::json& body);
     void on_vhci_request(const VhciRequest& r);
     void register_session(const std::shared_ptr<ClientSession>& s);
     void unregister_session(const std::shared_ptr<ClientSession>& s);

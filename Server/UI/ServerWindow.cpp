@@ -17,7 +17,6 @@
 #include <QPlainTextEdit>
 #include <QPushButton>
 #include <QStyle>
-#include <QStyleFactory>
 #include <QSystemTrayIcon>
 #include <QTabWidget>
 #include <QTableWidget>
@@ -27,33 +26,13 @@
 
 #include "Common/Platform.hpp"
 #include "Core/ServerEngine.hpp"
+#include "Kit/UiKit.hpp"
 
 namespace pf::gui {
 
 namespace {
 
 using nlohmann::json;
-
-QString text_or_dash(const std::string& s) { return s.empty() ? QStringLiteral("-") : QString::fromStdString(s); }
-
-QString format_rate(double bps) {
-    if (bps >= 1e9) return QStringLiteral("%1 Gb/s").arg(bps / 1e9, 0, 'f', 2);
-    if (bps >= 1e6) return QStringLiteral("%1 Mb/s").arg(bps / 1e6, 0, 'f', 2);
-    if (bps >= 1e3) return QStringLiteral("%1 Kb/s").arg(bps / 1e3, 0, 'f', 1);
-    return QStringLiteral("%1 b/s").arg(bps, 0, 'f', 0);
-}
-
-QString format_bytes(double b) {
-    if (b >= 1e9) return QStringLiteral("%1 GB").arg(b / 1e9, 0, 'f', 2);
-    if (b >= 1e6) return QStringLiteral("%1 MB").arg(b / 1e6, 0, 'f', 2);
-    if (b >= 1e3) return QStringLiteral("%1 KB").arg(b / 1e3, 0, 'f', 1);
-    return QStringLiteral("%1 B").arg(b, 0, 'f', 0);
-}
-
-QString format_latency(double p50_us) {
-    if (p50_us <= 0) return QStringLiteral("-");
-    return QStringLiteral("%1 ms").arg(p50_us / 1000.0, 0, 'f', 2);
-}
 
 // Maps a device state string from the engine JSON to a translation key.
 const char* status_key(DeviceShareState s) {
@@ -64,26 +43,6 @@ const char* status_key(DeviceShareState s) {
         case DeviceShareState::Unavailable: return "status_unavailable";
     }
     return "status_available";
-}
-
-void apply_dark_palette() {
-    QPalette p;
-    const QColor window(30, 30, 34), base(22, 22, 26), alt(36, 36, 42), button(45, 45, 52), text(230, 230, 235),
-        highlight(56, 132, 255);
-    p.setColor(QPalette::Window, window);
-    p.setColor(QPalette::WindowText, text);
-    p.setColor(QPalette::Base, base);
-    p.setColor(QPalette::AlternateBase, alt);
-    p.setColor(QPalette::Text, text);
-    p.setColor(QPalette::Button, button);
-    p.setColor(QPalette::ButtonText, text);
-    p.setColor(QPalette::ToolTipBase, alt);
-    p.setColor(QPalette::ToolTipText, text);
-    p.setColor(QPalette::Highlight, highlight);
-    p.setColor(QPalette::HighlightedText, Qt::white);
-    p.setColor(QPalette::Disabled, QPalette::Text, QColor(120, 120, 130));
-    p.setColor(QPalette::Disabled, QPalette::ButtonText, QColor(120, 120, 130));
-    qApp->setPalette(p);
 }
 
 }  // namespace
@@ -264,13 +223,7 @@ void ServerWindow::applyTexts() {
 
 void ServerWindow::setDarkTheme(bool dark) {
     dark_ = dark;
-    if (dark) {
-        qApp->setStyle(QStyleFactory::create(QStringLiteral("Fusion")));
-        apply_dark_palette();
-    } else {
-        qApp->setStyle(QStyleFactory::create(QStringLiteral("Fusion")));
-        qApp->setPalette(qApp->style()->standardPalette());
-    }
+    apply_theme(dark);
 }
 
 void ServerWindow::refresh() {
@@ -303,7 +256,7 @@ void ServerWindow::refresh() {
         if (auto it = by_device.find(d.id); it != by_device.end()) {
             const json& usb = it->second["usb"];
             traffic = format_bytes(usb.value("bytes_in", 0.0) + usb.value("bytes_out", 0.0));
-            latency = format_latency(usb["latency"].value("p50_us", 0.0));
+            latency = format_latency_us(usb["latency"].value("p50_us", 0.0));
         }
         const QStringList cells{tl(lang_, status_key(d.state)),
                                 QString::fromStdString(d.display_name()),
@@ -334,7 +287,7 @@ void ServerWindow::refresh() {
         const auto& c = clients[static_cast<std::size_t>(r)];
         const QStringList cells{QString::fromStdString(c.name), QString::fromStdString(c.address),
                                 c.secure ? tl(lang_, "yes") : tl(lang_, "no"),
-                                format_rate(c.tx_bps + c.rx_bps), format_latency(static_cast<double>(c.rtt_us)),
+                                format_rate(c.tx_bps + c.rx_bps), format_latency_us(static_cast<double>(c.rtt_us)),
                                 QString::number(c.sessions)};
         for (int k = 0; k < cells.size(); ++k) {
             auto* item = clients_table_->item(r, k);

@@ -134,7 +134,7 @@ private:
             pub_state_ = s;
             if (!err.empty() || s == LinkState::Connected) last_error_ = err;
         }
-        eng_.emit("server", json{{"name", entry_.name}, {"state", std::string(to_string(s))}, {"error", err}});
+        eng_.publish_event("server", json{{"name", entry_.name}, {"state", std::string(to_string(s))}, {"error", err}});
     }
 
     std::chrono::milliseconds backoff() {
@@ -216,7 +216,7 @@ private:
                 .client(entry_.name)
                 .op("trust")
                 .msg("pinned server certificate " + entry_.fingerprint + " (trust on first use)");
-            eng_.emit("trust", json{{"name", entry_.name}, {"fingerprint", entry_.fingerprint}});
+            eng_.publish_event("trust", json{{"name", entry_.name}, {"fingerprint", entry_.fingerprint}});
         }
         if (!entry_.tls) log::warn("Security", "connection to " + entry_.name + " is NOT encrypted");
         auto conn = conn_;
@@ -360,7 +360,7 @@ private:
         s->link_up(conn_);
         if (r->value("state", "") == "Reconnecting") s->device_removed();
         LogRecord(LogLevel::Info, "Sessions").session(s->id()).op("resume").result("ok").msg("session resumed");
-        eng_.emit("session", s->to_json());
+        eng_.publish_event("session", s->to_json());
     }
 
     void refresh_devices() {
@@ -375,7 +375,7 @@ private:
                              std::lock_guard lk(self->snap_m_);
                              self->devices_ = std::move(list);
                          }
-                         self->eng_.emit("devices", json{{"server", self->entry_.name}});
+                         self->eng_.publish_event("devices", json{{"server", self->entry_.name}});
                          self->auto_attach();
                      });
     }
@@ -482,7 +482,7 @@ private:
         if (ev == "removed" && j.value("reconnecting", false)) {
             if (auto it = sessions_.find(j.value("handle", 0u)); it != sessions_.end()) {
                 it->second->device_removed();
-                eng_.emit("session", it->second->to_json());
+                eng_.publish_event("session", it->second->to_json());
             }
         }
         // update the device list cache
@@ -497,7 +497,7 @@ private:
                 devices_.push_back(*d);
             }
         }
-        eng_.emit("devices", json{{"server", entry_.name}, {"event", ev}});
+        eng_.publish_event("devices", json{{"server", entry_.name}, {"event", ev}});
         if (ev == "arrived" || ev == "changed") auto_attach();
     }
 
@@ -513,7 +513,7 @@ private:
         UsbSpeed speed = UsbSpeed::High;
         parse_speed(j.value("speed", "high"), speed);
         it->second->device_reenumerated(*desc, speed, *info);
-        eng_.emit("session", it->second->to_json());
+        eng_.publish_event("session", it->second->to_json());
     }
 
     struct Pending {
@@ -563,7 +563,7 @@ void ClientEngine::set_event_handler(EventFn fn) {
     on_event_ = std::move(fn);
 }
 
-void ClientEngine::emit(const std::string& kind, const json& body) {
+void ClientEngine::publish_event(const std::string& kind, const json& body) {
     EventFn fn;
     {
         std::lock_guard lk(ev_m_);
@@ -749,7 +749,7 @@ void ClientEngine::attach(const std::string& server, const std::string& device_i
                    }
                    asio::post(l->strand(), [l, s, cb, this] {
                        s->link_up(l->connection());
-                       emit("session", s->to_json());
+                       publish_event("session", s->to_json());
                        cb(s->id());
                    });
                });
@@ -803,7 +803,7 @@ void ClientEngine::unregister_session(const std::shared_ptr<ClientSession>& s) {
         sessions_.erase(s->id());
         by_cookie_.erase(s->cookie());
     }
-    emit("session", s->to_json());
+    publish_event("session", s->to_json());
 }
 
 std::shared_ptr<ClientSession> ClientEngine::session(const std::string& id) const {

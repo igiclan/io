@@ -42,8 +42,9 @@ pf_add_test(pf_client_unit_tests unit
 target_include_directories(pf_integration_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(PF_HAVE_QT)
-    add_executable(pf_gui_tests Gui/test_server_window.cpp)
-    target_link_libraries(pf_gui_tests PRIVATE pf_doctest pf_server_ui Qt6::Widgets)
+    add_executable(pf_gui_tests Gui/test_server_window.cpp Gui/test_client_window.cpp)
+    target_include_directories(pf_gui_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(pf_gui_tests PRIVATE pf_doctest pf_server_ui pf_client_ui Qt6::Widgets)
     set_target_properties(pf_gui_tests PROPERTIES AUTOMOC ON)
     add_test(NAME pf_gui_tests COMMAND pf_gui_tests)
     set_tests_properties(pf_gui_tests PROPERTIES LABELS gui TIMEOUT 600)

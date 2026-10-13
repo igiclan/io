@@ -26,6 +26,7 @@ include(PfDependencies)
 enable_testing()
 
 add_subdirectory(Shared)
+add_subdirectory(UI)
 add_subdirectory(Server)
 add_subdirectory(Client)
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Driver/Windows/pfdevcon/CMakeLists.txt")

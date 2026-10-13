@@ -24,7 +24,7 @@ if(PF_HAVE_QT)
     # GUI: Qt 6 Widgets front end over the engine (no engine logic lives here).
     add_library(pf_server_ui STATIC UI/Strings.cpp UI/ServerWindow.cpp)
     target_include_directories(pf_server_ui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-    target_link_libraries(pf_server_ui PUBLIC pf_server_core Qt6::Widgets)
+    target_link_libraries(pf_server_ui PUBLIC pf_server_core pf_ui_kit Qt6::Widgets)
     set_target_properties(pf_server_ui PROPERTIES AUTOMOC ON)
     add_executable(parsflash-server-gui WIN32 App/ServerGuiMain.cpp)
     target_link_libraries(parsflash-server-gui PRIVATE pf_server_ui)
