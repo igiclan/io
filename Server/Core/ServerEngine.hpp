@@ -116,7 +116,7 @@ private:
 
     // broadcasting
     void broadcast_device_event(const std::string& event, const DeviceInfo& d);
-    void emit(const std::string& kind, const nlohmann::json& body);
+    void publish_event(const std::string& kind, const nlohmann::json& body);
     bool client_may_see(const TokenIdentity& tok, const DeviceInfo& d) const;
 
     void sample_metrics();

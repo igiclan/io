@@ -266,7 +266,7 @@ private:
             .result("ok")
             .msg("client " + client_name_ + " (" + conn_->remote_address() + ") authenticated" +
                  (conn_->is_secure() ? " [TLS]" : " [PLAINTEXT]"));
-        eng_.emit("client", json{{"event", "connected"}, {"name", client_name_}});
+        eng_.publish_event("client", json{{"event", "connected"}, {"name", client_name_}});
     }
 
     void on_device_list(const InFrame& f) {
@@ -328,7 +328,7 @@ private:
         }
         handles_.clear();
         eng_.remove_connection(id_);
-        eng_.emit("client", json{{"event", "disconnected"}, {"name", client_name_}});
+        eng_.publish_event("client", json{{"event", "disconnected"}, {"name", client_name_}});
     }
 
     ServerEngine& eng_;
@@ -365,7 +365,7 @@ void ServerEngine::set_event_handler(EventFn fn) {
     on_event_ = std::move(fn);
 }
 
-void ServerEngine::emit(const std::string& kind, const json& body) {
+void ServerEngine::publish_event(const std::string& kind, const json& body) {
     EventFn fn;
     {
         std::lock_guard lk(ev_m_);
@@ -819,7 +819,7 @@ void ServerEngine::broadcast_device_event(const std::string& event, const Device
     for (auto& c : conns) {
         if (c->authed() && client_may_see(c->token(), d)) c->send_json(MsgType::DeviceEvent, body);
     }
-    emit("device", body);
+    publish_event("device", body);
 }
 
 // ------------------------------------------------------------ sessions
@@ -933,7 +933,7 @@ void ServerEngine::attach(const std::shared_ptr<ClientConn>& cc, std::uint32_t c
                  std::string(to_string(session->access())) + ", priority " +
                  std::string(to_string(session->priority())) + ")");
         broadcast_device_event("changed", i);
-        emit("session", session->to_json());
+        publish_event("session", session->to_json());
     };
 
     if (access == AccessMode::SharedReadOnly) {
@@ -1018,7 +1018,7 @@ void ServerEngine::resume(const std::shared_ptr<ClientConn>& cc, std::uint32_t c
                   corr);
     LogRecord(LogLevel::Info, "Sessions").session(s->id()).client(s->owner_name()).op("resume").result("ok").msg(
         "session resumed by " + s->owner_name());
-    emit("session", s->to_json());
+    publish_event("session", s->to_json());
 }
 
 void ServerEngine::on_session_connection_lost(const std::shared_ptr<ServerSession>& s) {
@@ -1035,7 +1035,7 @@ void ServerEngine::on_session_connection_lost(const std::shared_ptr<ServerSessio
     s->arm_grace_timer(cfg_.reconnect_timeout_ms, [this, w] {
         if (auto ss = w.lock()) close_session(ss, "client did not reconnect within reconnect timeout");
     });
-    emit("session", s->to_json());
+    publish_event("session", s->to_json());
 }
 
 void ServerEngine::close_session(const std::shared_ptr<ServerSession>& s, const std::string& reason) {
@@ -1074,7 +1074,7 @@ void ServerEngine::close_session(const std::shared_ptr<ServerSession>& s, const 
     s->shutdown();
     LogRecord(LogLevel::Info, "Sessions").session(s->id()).client(s->owner_name()).op("close").msg(reason);
     if (device_changed) broadcast_device_event("changed", changed);
-    emit("session", s->to_json());
+    publish_event("session", s->to_json());
 }
 
 Result<std::shared_ptr<ServerSession>> ServerEngine::find_session(const std::string& id) {
