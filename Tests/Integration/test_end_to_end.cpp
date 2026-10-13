@@ -15,7 +15,7 @@ TEST_CASE("attach, enumerate descriptors and move data over TLS") {
     auto id = h.device_on_port(1);
     REQUIRE_FALSE(id.empty());
     auto sid = c.attach_sync("bench", id);
-    REQUIRE_MESSAGE(sid.ok(), sid.error().describe());
+    REQUIRE_MESSAGE(sid.ok(), (sid.ok() ? std::string() : sid.error().describe()));
     auto& v = h.vhci();
     const std::uint32_t dev = v.wait_for_device(0x18d1, 0x4ee7, 5s);
     REQUIRE(dev != 0);

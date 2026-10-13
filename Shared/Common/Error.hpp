@@ -3,6 +3,8 @@
 #pragma once
 
 #include <cstdint>
+#include <source_location>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -84,16 +86,28 @@ public:
 
     [[nodiscard]] bool ok() const noexcept { return std::holds_alternative<T>(v_); }
     explicit operator bool() const noexcept { return ok(); }
-    T& value() & { return std::get<T>(v_); }
-    const T& value() const& { return std::get<T>(v_); }
-    T&& value() && { return std::get<T>(std::move(v_)); }
+    T& value(std::source_location loc = std::source_location::current()) & { check(loc); return std::get<T>(v_); }
+    const T& value(std::source_location loc = std::source_location::current()) const& { check(loc); return std::get<T>(v_); }
+    T&& value(std::source_location loc = std::source_location::current()) && { check(loc); return std::get<T>(std::move(v_)); }
     T* operator->() { return &value(); }
     const T* operator->() const { return &value(); }
     T& operator*() & { return value(); }
     const T& operator*() const& { return value(); }
-    [[nodiscard]] const Error& error() const { return std::get<Error>(v_); }
+    [[nodiscard]] const Error& error(std::source_location loc = std::source_location::current()) const {
+        if (ok()) throw std::logic_error(where(loc) + "Result::error() called on a successful result");
+        return std::get<Error>(v_);
+    }
 
 private:
+    // Accessing the value of a failed result is a programming error. Report the
+    // underlying error instead of std::bad_variant_access, which is hard to diagnose.
+    static std::string where(const std::source_location& loc) {
+        return std::string(loc.file_name()) + ":" + std::to_string(loc.line()) + ": ";
+    }
+    void check(const std::source_location& loc) const {
+        if (!ok())
+            throw std::logic_error(where(loc) + "Result::value() called on an error: " + std::get<Error>(v_).describe());
+    }
     std::variant<T, Error> v_;
 };
 

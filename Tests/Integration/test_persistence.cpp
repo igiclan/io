@@ -107,7 +107,7 @@ TEST_CASE("client crash: same client re-attaches (takeover) without waiting for 
         REQUIRE(h.wait_connected(c));
         client_id = c.config().client_id;
         auto first = c.attach_sync("bench", id);
-        REQUIRE_MESSAGE(first.ok(), first.error().describe());
+        REQUIRE_MESSAGE(first.ok(), (first.ok() ? std::string() : first.error().describe()));
         c.debug_drop_connection("bench");
         c.stop();  // process "dies" without detaching
     }
@@ -126,7 +126,7 @@ TEST_CASE("client crash: same client re-attaches (takeover) without waiting for 
     REQUIRE(c2.start().ok());
     REQUIRE(h.wait_connected(c2));
     auto s = c2.attach_sync("bench", id);
-    REQUIRE_MESSAGE(s.ok(), s.error().describe());
+    REQUIRE_MESSAGE(s.ok(), (s.ok() ? std::string() : s.error().describe()));
     CHECK(vraw->wait_for_device(0x18d1, 0x4ee7, 5s) != 0);
     c2.stop();
 }
